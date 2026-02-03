@@ -8,15 +8,18 @@ from esphome.const import (
     CONF_RESTORE_VALUE,
 )
 
-PersistedNumber = number.number_ns.class_(
+PersistedNumber = cg.class_(
     "PersistedNumber", number.Number, cg.Component
 )
 
-PERSISTED_NUMBER_SCHEMA = number.NUMBER_SCHEMA.extend(
-    {
-        cv.GenerateID(): cv.declare_id(PersistedNumber),
-        cv.Optional(CONF_RESTORE_VALUE, default=True): cv.boolean,
-    }
+PERSISTED_NUMBER_SCHEMA = (
+    number.number_schema(PersistedNumber)
+    .extend(
+        {
+            cv.GenerateID(CONF_ID): cv.declare_id(PersistedNumber),
+            cv.Optional(CONF_RESTORE_VALUE, default=True): cv.boolean,
+        }
+    )
 )
 
 
@@ -26,10 +29,18 @@ async def new_persisted_number(
     max_value: float,
     step: Optional[float] = None,
 ):
-    var = await number.new_number(
-        config, min_value=min_value, max_value=max_value, step=step
-    )
+    var = cg.new_Pvariable(config[CONF_ID])
+
     await cg.register_component(var, config)
+    await number.register_number(
+        var,
+        config,
+        min_value=min_value,
+        max_value=max_value,
+        step=step,
+    )
+
     if CONF_RESTORE_VALUE in config:
         cg.add(var.set_restore_value(config[CONF_RESTORE_VALUE]))
+
     return var
