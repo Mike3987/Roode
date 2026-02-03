@@ -8,7 +8,7 @@ from esphome.const import (
     CONF_RESTORE_VALUE,
 )
 
-PersistedNumber = cg.class_(
+PersistedNumber = number.number_ns.class_(
     "PersistedNumber", number.Number, cg.Component
 )
 
